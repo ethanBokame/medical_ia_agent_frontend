@@ -1,43 +1,147 @@
-<div class="min-h-screen bg-black relative overflow-hidden">
+<div class="min-h-screen bg-white relative overflow-hidden">
   <!-- Bulles d'animation -->
   <div class="bubbles">
     <div class="bubble" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]"></div>
   </div>
 
-  <div class="container mx-auto px-4 py-8 relative z-10">
-    <!-- Mode Live -->
-    <div *ngIf="isLiveMode" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-lg">
-      <app-live-mode (close)="onToggleLiveMode()"></app-live-mode>
-    </div>
+  <!-- Menu Burger -->
+  <div class="fixed top-0 right-0 z-40 p-4">
+    <button 
+      (click)="toggleDrawer()" 
+      class="w-10 h-10 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-all duration-300 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#E8513E]">
+      <div class="space-y-1.5">
+        <span class="block w-5 h-0.5 bg-gray-600 transition-all duration-300" [class.rotate-45]="isDrawerOpen" [class.translate-y-2]="isDrawerOpen"></span>
+        <span class="block w-5 h-0.5 bg-gray-600 transition-all duration-300" [class.opacity-0]="isDrawerOpen"></span>
+        <span class="block w-5 h-0.5 bg-gray-600 transition-all duration-300" [class.-rotate-45]="isDrawerOpen" [class.-translate-y-2]="isDrawerOpen"></span>
+      </div>
+    </button>
+  </div>
 
-    <!-- Interface principale -->
-    <div class="max-w-4xl mx-auto">
-      <!-- Header -->
-      <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-white mb-2">Médi<span class="text-[#E8513E]">Chat</span></h1>
-        <p class="text-gray-400">Assistant médical intelligent</p>
+  <!-- Drawer (Menu latéral) -->
+  <div 
+    *ngIf="isDrawerOpen"
+    class="fixed inset-0 z-50 transition-all duration-300">
+    
+    <!-- Overlay transparent (fermeture au clic) -->
+    <div 
+      class="absolute inset-0 bg-transparent"
+      (click)="closeDrawer()">
+    </div>
+    
+    <!-- Drawer content -->
+    <div 
+      #drawer
+      class="absolute top-0 right-0 h-full w-80 bg-white shadow-2xl transition-transform duration-300 transform"
+      [class.translate-x-0]="isDrawerOpen"
+      [class.translate-x-full]="!isDrawerOpen">
+      
+      <!-- Header du drawer -->
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-semibold text-gray-800">Menu</h2>
+          <button 
+            (click)="closeDrawer()"
+            class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
+            ✕
+          </button>
+        </div>
+      </div>
+      
+      <!-- Navigation Links -->
+      <nav class="p-4">
+        <div class="space-y-2">
+          <!-- Accueil -->
+          <button 
+            (click)="navigateTo('/')"
+            class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center space-x-3 group">
+            <svg class="w-5 h-5 text-gray-500 group-hover:text-[#E8513E] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <span class="text-gray-700 group-hover:text-[#E8513E] transition-colors font-medium">Accueil</span>
+          </button>
+          
+          <!-- Agent -->
+          <button 
+            (click)="navigateTo('/agent')"
+            class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center space-x-3 group">
+            <svg class="w-5 h-5 text-gray-500 group-hover:text-[#E8513E] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+            <span class="text-gray-700 group-hover:text-[#E8513E] transition-colors font-medium">Agent IA</span>
+          </button>
+          
+          <!-- Login -->
+          <button 
+            (click)="navigateTo('/login')"
+            class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center space-x-3 group">
+            <svg class="w-5 h-5 text-gray-500 group-hover:text-[#E8513E] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+            </svg>
+            <span class="text-gray-700 group-hover:text-[#E8513E] transition-colors font-medium">Connexion</span>
+          </button>
+        </div>
+      </nav>
+      
+      <!-- Footer du drawer (optionnel) -->
+      <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200">
+        <div class="text-xs text-gray-400 text-center">
+          © 2026 - Assistant IA
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mode Live -->
+  <div *ngIf="isLiveMode" class="fixed inset-0 z-50 bg-white">
+    <app-live-mode 
+      #liveModeComponent
+      (close)="onToggleLiveMode()" 
+      (sendTranscript)="onReceiveTranscript($event)">
+    </app-live-mode>
+  </div>
+
+  <!-- Interface principale -->
+  <div class="container mx-auto px-4 py-8 relative z-10 min-h-screen flex flex-col">
+    <div class="max-w-4xl mx-auto w-full flex-1 flex flex-col justify-center">
+      
+      <!-- Titre centré -->
+      <div *ngIf="showWelcomeTitle && messages.length === 0" class="flex items-center justify-center mb-8">
+        <h1 class="text-4xl text-gray-800 text-center max-w-2xl px-4 mb-25 animate-fade-in font-bold">
+          Comment pouvons nous vous aider aujourd'hui ?
+        </h1>
       </div>
 
       <!-- Zone de chat -->
-      <div class="bg-white/5 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-white/10">
-        <!-- Messages -->
-        <div class="chat-messages h-[500px] overflow-y-auto scrollbar-hide p-6">
-          <app-chat-message
-            *ngFor="let message of messages"
-            [message]="message.text"
-            [isUser]="message.isUser"
-            [timestamp]="message.timestamp">
-          </app-chat-message>
-        </div>
-
-        <!-- Input -->
-        <div class="border-t border-white/10 p-4">
-          <app-prompt-input
-            (sendMessageEvent)="onSendMessage($event)"
-            (toggleLiveModeEvent)="onToggleLiveMode()">
-          </app-prompt-input>
+      <div *ngIf="messages.length > 0" class="flex flex-col animate-slide-up w-full">
+        <div #chatMessages class="chat-messages overflow-y-auto custom-scrollbar px-10" style="max-height: 450px; min-height: 350px;">
+          <div class="space-y-4">
+            <app-chat-message
+              *ngFor="let message of messages"
+              [message]="message.text"
+              [isUser]="message.isUser"
+              [timestamp]="message.timestamp">
+            </app-chat-message>
+            <div *ngIf="isLoading" class="flex justify-start">
+              <div class="bg-gray-100 rounded-2xl px-4 py-2">
+                <div class="flex gap-1">
+                  <span class="w-2 h-2 bg-[#E8513E] rounded-full animate-bounce"></span>
+                  <span class="w-2 h-2 bg-[#E8513E] rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                  <span class="w-2 h-2 bg-[#E8513E] rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Input -->
+      <div class="w-full" [class.mt-8]="messages.length > 0" [class.mt-0]="messages.length === 0">
+        <app-prompt-input
+          (sendMessageEvent)="onSendMessage($event)"
+          (toggleLiveModeEvent)="onToggleLiveMode()">
+        </app-prompt-input>
+      </div>
+      
     </div>
   </div>
 </div>

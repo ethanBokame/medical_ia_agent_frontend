@@ -14,7 +14,7 @@
   bottom: -100px;
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #E8513E20, #e8523eb8);
+  background: linear-gradient(135deg, #E8513E20, #E8513E40);
   border-radius: 50%;
   opacity: 0.3;
   animation: rise 10s infinite ease-in;
@@ -50,42 +50,7 @@
   }
 }
 
-/* Custom scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #E8513E;
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #c43d2b;
-}
-
-/* Animations */
 @keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out;
-}
-
-@keyframes slide-up {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -96,85 +61,26 @@
   }
 }
 
-.animate-slide-up {
-  animation: slide-up 0.5s ease-out;
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
 }
 
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
 }
 
-.animate-bounce {
-  animation: bounce 0.5s ease-in-out infinite;
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
 }
 
-/* Scroll smooth */
-.chat-messages {
-  scroll-behavior: smooth;
+/* Animation spin pour le chargement */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Centrage parfait */
-.justify-center {
-  justify-content: center;
-}
-
-/* Animation pour le drawer */
-.drawer-enter {
-  transform: translateX(100%);
-}
-
-.drawer-enter-active {
-  transform: translateX(0);
-  transition: transform 300ms ease-in-out;
-}
-
-.drawer-exit {
-  transform: translateX(0);
-}
-
-.drawer-exit-active {
-  transform: translateX(100%);
-  transition: transform 300ms ease-in-out;
-}
-
-/* Animation pour le menu burger */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.fade-in {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-/* Style pour le bouton burger quand ouvert */
-
-
-.rotate-45 {
-  transform: rotate(45deg);
-}
-
-.translate-y-2 {
-  transform: translateY(8px);
-}
-
-.-rotate-45 {
-  transform: rotate(-45deg);
-}
-
-.-translate-y-2 {
-  transform: translateY(-8px);
-}
-
-.opacity-0 {
-  opacity: 0;
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
