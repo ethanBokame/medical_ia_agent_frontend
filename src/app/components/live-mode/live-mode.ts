@@ -1,10 +1,11 @@
 import { Component, Output, EventEmitter, ElementRef, ViewChild, AfterViewInit, HostListener, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Drawer } from '../drawer/drawer';
 
 @Component({
   selector: 'app-live-mode',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, Drawer],
   templateUrl: './live-mode.html',
   styleUrls: ['./live-mode.css'],
 })
