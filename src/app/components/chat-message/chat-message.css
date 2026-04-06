@@ -1,0 +1,31 @@
+/* Animation pour les boutons */
+button {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+/* Animation d'apparition des boutons */
+.group:hover .opacity-0 {
+  opacity: 1;
+}
+
+/* Positionnement du timestamp en bas à gauche */
+.absolute.bottom-2.left-4 {
+  bottom: 0.5rem;
+  left: 1rem;
+}
+
+/* Padding en bas pour le texte pour ne pas chevaucher les boutons */
+.pb-6 {
+  padding-bottom: 1.5rem;
+}
+
+/* Taille des icônes uniformisée */
+.w-3, .h-3 {
+  width: 0.75rem;
+  height: 0.75rem;
+}

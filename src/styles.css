@@ -1,3 +1,55 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import "tailwindcss";
+
+/* Scrollbar personnalisée - couleur orange */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E8513E;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #c43d2b;
+}
+
+/* Pour Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #E8513E #f1f1f1;
+}
+
+/* Optionnel : Pour les zones spécifiques avec overflow */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #E8513E;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #c43d2b;
+}
+
+/* Firefox pour custom-scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #E8513E #f1f1f1;
+}
