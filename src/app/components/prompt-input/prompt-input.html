@@ -1,36 +1,65 @@
 <div class="flex flex-col gap-3">
-  <div class="flex gap-3">
+  
+  <!-- Ligne principale -->
+  <div class="flex gap-3 justify-center items-center">
+    
+    <!-- Textarea -->
     <div class="flex-1 relative">
-      <input
-        #promptInput
-        type="text"
+      <textarea
+        #promptTextarea
         [(ngModel)]="prompt"
         (keyup.enter)="onSendMessage()"
+        (input)="adjustTextareaHeight()"
         placeholder="Écrivez votre message ici..."
-        class="w-full bg-white/10 text-white placeholder-white/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#E8513E] transition-all"
-      />
+        rows="1"
+        class="w-full bg-gray-50 text-gray-800 placeholder-gray-400 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#E8513E] transition-all resize-none overflow-y-auto scrollbar-hide border border-gray-200"
+        style="max-height: 50px; min-height: 50px;">
+      </textarea>
     </div>
-    
+
+    <!-- Bouton envoyer -->
     <button
       (click)="onSendMessage()"
-      class="bg-[#E8513E] hover:bg-[#c43d2b] text-white px-6 py-3 rounded-xl transition-all transform hover:scale-105">
-      Envoyer
+      class="bg-[#E8513E] hover:bg-[#c43d2b] text-white p-3 rounded-xl transition-all transform hover:scale-105 flex items-center justify-center">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+      </svg>
     </button>
-  </div>
 
-  <div class="flex gap-3">
+    <!-- Bouton live -->
     <button
       (click)="onToggleLiveMode()"
-      class="flex-1 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-2">
-      <span class="text-xl">🎥</span>
-      Live Mode
+      class="bg-gray-100 hover:bg-gray-200 text-gray-700 p-3 rounded-xl transition-all flex items-center justify-center">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+      </svg>
     </button>
-    
+
+    <!-- Bouton audio avec animation d'enregistrement -->
     <button
       (click)="startVoiceRecognition()"
-      class="flex-1 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-2">
-      <span class="text-xl">🎤</span>
-      Audio
+      class="p-3 rounded-xl transition-all flex items-center justify-center"
+      [class.bg-[#E8513E]]="isRecording"
+      [class.text-white]="isRecording"
+      [class.bg-gray-100]="!isRecording"
+      [class.text-gray-700]="!isRecording"
+      [class.hover:bg-gray-200]="!isRecording"
+      [class.animate-pulse]="isRecording">
+      
+      <!-- Icône microphone normal -->
+      <svg *ngIf="!isRecording" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+      </svg>
+      
+      <!-- Icône d'enregistrement animé -->
+      <div *ngIf="isRecording" class="flex items-center justify-center gap-1">
+        <!-- <div class="recording-dot"></div> -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+          <path fill-rule="evenodd" d="M4.5 7.5a3 3 0 0 1 3-3h9a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3v-9Z" clip-rule="evenodd" />
+        </svg>
+
+      </div>
     </button>
+
   </div>
 </div>

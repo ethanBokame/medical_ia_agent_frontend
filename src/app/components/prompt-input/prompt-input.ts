@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, ElementRef, ViewChild } from '@angular/core';
+import { Component, Output, EventEmitter, ElementRef, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -9,42 +9,87 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './prompt-input.html',
   styleUrls: ['./prompt-input.css'],
 })
-export class PromptInput {
+export class PromptInput implements OnDestroy {
   @Output() sendMessageEvent = new EventEmitter<string>();
-  @Output() toggleLiveModeEvent = new EventEmitter<void>(); // Renommé pour éviter la confusion
-  @ViewChild('promptInput') promptInput!: ElementRef<HTMLInputElement>;
+  @Output() toggleLiveModeEvent = new EventEmitter<void>();
+  @ViewChild('promptTextarea') promptTextarea!: ElementRef<HTMLTextAreaElement>;
   
   prompt = '';
+  isRecording = false;
+  private currentRecognition: any = null;
+
+  constructor(private cdr: ChangeDetectorRef) {}
 
   onSendMessage() {
     if (this.prompt.trim()) {
       this.sendMessageEvent.emit(this.prompt);
       this.prompt = '';
-      this.promptInput.nativeElement.focus();
+      this.adjustTextareaHeight();
+      this.cdr.detectChanges();
     }
   }
 
-  onToggleLiveMode() { // Méthode qui émet l'événement
+  onToggleLiveMode() {
     this.toggleLiveModeEvent.emit();
+    this.cdr.detectChanges();
+  }
+
+  adjustTextareaHeight() {
+    const textarea = this.promptTextarea.nativeElement;
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 50) + 'px';
   }
 
   startVoiceRecognition() {
+    // Si déjà en train d'enregistrer, on annule
+    if (this.isRecording) {
+      this.stopRecording();
+      return;
+    }
+
     const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
     if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'fr-FR';
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      this.isRecording = true;
+      this.cdr.detectChanges();
+      
+      this.currentRecognition = new SpeechRecognition();
+      this.currentRecognition.lang = 'fr-FR';
+      this.currentRecognition.continuous = false;
+      this.currentRecognition.interimResults = false;
 
-      recognition.onresult = (event: any) => {
+      this.currentRecognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         this.prompt = transcript;
+        this.adjustTextareaHeight();
         this.onSendMessage();
+        this.stopRecording();
       };
 
-      recognition.start();
-    } else {
-      alert('Votre navigateur ne supporte pas la reconnaissance vocale');
+      this.currentRecognition.onerror = () => {
+        this.stopRecording();
+      };
+
+      this.currentRecognition.onend = () => {
+        this.stopRecording();
+      };
+
+      this.currentRecognition.start();
     }
+  }
+
+  private stopRecording() {
+    this.isRecording = false;
+    this.cdr.detectChanges();
+    
+    if (this.currentRecognition) {
+      try {
+        this.currentRecognition.stop();
+      } catch(e) {}
+      this.currentRecognition = null;
+    }
+  }
+
+  ngOnDestroy() {
+    this.stopRecording();
   }
 }
