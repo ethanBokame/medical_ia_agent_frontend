@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ChatMessage } from '../../components/chat-message/chat-message';
 import { PromptInput } from '../../components/prompt-input/prompt-input';
 import { LiveMode } from '../../components/live-mode/live-mode';
+import { Drawer } from '../../components/drawer/drawer';
 
 interface Message {
   text: string;
@@ -14,7 +15,7 @@ interface Message {
 @Component({
   selector: 'app-agent',
   standalone: true,
-  imports: [CommonModule, ChatMessage, PromptInput, LiveMode],
+  imports: [CommonModule, ChatMessage, PromptInput, LiveMode, Drawer],
   templateUrl: './agent.html',
   styleUrls: ['./agent.css']
 })
@@ -27,7 +28,7 @@ export default class Agent implements AfterViewChecked {
   isLiveMode = false;
   isLoading = false;
   showWelcomeTitle = true;
-  isDrawerOpen = false;
+
 
   constructor(private cdr: ChangeDetectorRef, private router: Router) {}
 
@@ -44,26 +45,9 @@ export default class Agent implements AfterViewChecked {
     }
   }
 
-  toggleDrawer() {
-    this.isDrawerOpen = !this.isDrawerOpen;
-    if (this.isDrawerOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    this.cdr.detectChanges();
-  }
+  
 
-  closeDrawer() {
-    this.isDrawerOpen = false;
-    document.body.style.overflow = '';
-    this.cdr.detectChanges();
-  }
 
-  navigateTo(route: string) {
-    this.router.navigate([route]);
-    this.closeDrawer();
-  }
 
   async onSendMessage(prompt: string) {
     if (!prompt.trim()) return;
