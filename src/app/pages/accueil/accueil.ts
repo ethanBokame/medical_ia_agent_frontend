@@ -1,11 +1,30 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-accueil',
-  imports: [],
+  standalone: true, 
   templateUrl: './accueil.html',
-  styleUrl: './accueil.css',
+  styleUrls: ['./accueil.css']
 })
-export default class Accueil {
+export class Accueil implements OnInit {
 
+  constructor() { }
+
+  ngOnInit(): void {
+    this.addScrollAnimation();
+  }
+
+  addScrollAnimation() {
+    window.addEventListener('scroll', () => {
+      const elements = document.querySelectorAll('.transition-all.duration-300');
+      elements.forEach(element => {
+        const position = element.getBoundingClientRect().top;
+        const screenPosition = window.innerHeight;
+        
+        if (position < screenPosition - 100) {
+          element.classList.add('opacity-100', 'translate-y-0');
+        }
+      });
+    });
+  }
 }
