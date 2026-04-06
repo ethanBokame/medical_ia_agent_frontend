@@ -1,0 +1,36 @@
+<div class="flex flex-col gap-3">
+  <div class="flex gap-3">
+    <div class="flex-1 relative">
+      <input
+        #promptInput
+        type="text"
+        [(ngModel)]="prompt"
+        (keyup.enter)="onSendMessage()"
+        placeholder="Écrivez votre message ici..."
+        class="w-full bg-white/10 text-white placeholder-white/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#E8513E] transition-all"
+      />
+    </div>
+    
+    <button
+      (click)="onSendMessage()"
+      class="bg-[#E8513E] hover:bg-[#c43d2b] text-white px-6 py-3 rounded-xl transition-all transform hover:scale-105">
+      Envoyer
+    </button>
+  </div>
+
+  <div class="flex gap-3">
+    <button
+      (click)="onToggleLiveMode()"
+      class="flex-1 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-2">
+      <span class="text-xl">🎥</span>
+      Live Mode
+    </button>
+    
+    <button
+      (click)="startVoiceRecognition()"
+      class="flex-1 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition-all flex items-center justify-center gap-2">
+      <span class="text-xl">🎤</span>
+      Audio
+    </button>
+  </div>
+</div>
