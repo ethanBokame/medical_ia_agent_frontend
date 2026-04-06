@@ -1,0 +1,9 @@
+<div class="flex mb-4" [class.justify-end]="isUser" [class.justify-start]="!isUser">
+    <div class="max-w-[70%]"
+        [class.bg-[#E8513E]]="isUser"
+        [class.bg-white/10]="!isUser"
+        class="rounded-2xl px-4 py-2 shadow-lg">
+        <p class="text-white text-sm">{{message}}</p>
+        <span class="text-xs text-white/60 mt-1 block">{{timestamp | date:'HH:mm'}}</span>
+    </div>
+</div>
