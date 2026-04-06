@@ -1,1 +1,213 @@
-<p>accueil works!</p>
+<!-- Navbar -->
+<nav class="fixed top-0 w-full bg-white/95 backdrop-blur-md z-50 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center py-4">
+      <!-- Logo -->
+      <div class="flex items-center space-x-2">
+        <div class="w-10 h-10 bg-[#E8513E] rounded-xl flex items-center justify-center">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+          </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-800">Medical<span class="text-[#E8513E]">Agent</span></h1>
+      </div>
+      
+      <!-- Desktop Menu -->
+      <div class="hidden md:flex space-x-8">
+        <a href="#features" class="text-gray-700 hover:text-[#E8513E] transition-colors">Fonctionnalités</a>
+        <a href="#how-it-works" class="text-gray-700 hover:text-[#E8513E] transition-colors">Comment ça marche</a>
+      </div>
+      
+      <!-- CTA Button -->
+      <button routerLink="/agent" class="bg-[#E8513E] text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all hover:scale-105">
+        Commencer
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="pt-32 pb-20 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+      <!-- Left Content -->
+      <div class="animate-slide-up">
+        <div class="inline-block px-4 py-2 bg-red-50 rounded-full mb-6">
+          <span class="text-[#E8513E] font-semibold text-sm">🤖 IA Médicale Avancée</span>
+        </div>
+        <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-6">
+          Votre assistant 
+          <span class="text-[#E8513E]">pré-diagnostic</span> 
+          intelligent
+        </h1>
+        <p class="text-xl text-gray-600 mb-8">
+          Analysez vos symptômes en quelques minutes. Obtenez des pistes et recommandations basées sur l'IA.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <button routerLink="/agent" class="bg-[#E8513E] text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+            🚀 Commencer l'analyse
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Right Image/Illustration -->
+      <div class="relative animate-float">
+        <div class="relative z-10">
+          <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80"
+     alt="AI healthcare digital doctor"
+     class="rounded-2xl shadow-2xl hover:scale-105 transition duration-500">
+        </div>
+        <div class="absolute top-10 -right-10 w-40 h-40 bg-[#E8513E]/20 rounded-full blur-3xl"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-20 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">
+        Pourquoi choisir <span class="text-[#E8513E]">MedicalAgent</span> ?
+      </h2>
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+        Une approche innovante pour prendre soin de votre santé
+      </p>
+    </div>
+    
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Feature 1 -->
+      <div class="bg-white rounded-2xl p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+        <div class="w-16 h-16 bg-[#E8513E]/10 rounded-2xl flex items-center justify-center mb-6">
+          <svg class="w-8 h-8 text-[#E8513E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3">Analyse Intelligente</h3>
+        <p class="text-gray-600">
+          Notre IA analyse vos symptômes avec précision et vous guide vers les bonnes questions.
+        </p>
+      </div>
+      
+      <!-- Feature 2 -->
+      <div class="bg-white rounded-2xl p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+        <div class="w-16 h-16 bg-[#E8513E]/10 rounded-2xl flex items-center justify-center mb-6">
+          <svg class="w-8 h-8 text-[#E8513E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3">Rapide & Efficace</h3>
+        <p class="text-gray-600">
+          Obtenez des résultats en moins de 5 minutes, 24h/24 et 7j/7.
+        </p>
+      </div>
+      
+      <!-- Feature 3 -->
+      <div class="bg-white rounded-2xl p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+        <div class="w-16 h-16 bg-[#E8513E]/10 rounded-2xl flex items-center justify-center mb-6">
+          <svg class="w-8 h-8 text-[#E8513E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3">Alertes Urgences</h3>
+        <p class="text-gray-600">
+          Détection automatique des situations critiques avec recommandations immédiates.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how-it-works" class="py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">
+        Comment ça <span class="text-[#E8513E]">marche</span> ?
+      </h2>
+      <p class="text-xl text-gray-600">4 étapes simples vers une meilleure compréhension de votre santé</p>
+    </div>
+    
+    <div class="grid md:grid-cols-4 gap-8">
+      <div class="text-center group">
+        <div class="w-20 h-20 bg-[#E8513E]/10 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-[#E8513E] group-hover:scale-110">
+          <span class="text-2xl font-bold text-[#E8513E] group-hover:text-white">1</span>
+        </div>
+        <h3 class="font-bold text-lg mb-2">Décrivez vos symptômes</h3>
+        <p class="text-gray-600">Entrez vos symptômes dans l'assistant conversationnel</p>
+      </div>
+      
+      <div class="text-center group">
+        <div class="w-20 h-20 bg-[#E8513E]/10 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-[#E8513E] group-hover:scale-110">
+          <span class="text-2xl font-bold text-[#E8513E] group-hover:text-white">2</span>
+        </div>
+        <h3 class="font-bold text-lg mb-2">Questions intelligentes</h3>
+        <p class="text-gray-600">L'IA vous pose des questions ciblées</p>
+      </div>
+      
+      <div class="text-center group">
+        <div class="w-20 h-20 bg-[#E8513E]/10 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-[#E8513E] group-hover:scale-110">
+          <span class="text-2xl font-bold text-[#E8513E] group-hover:text-white">3</span>
+        </div>
+        <h3 class="font-bold text-lg mb-2">Analyse des données</h3>
+        <p class="text-gray-600">Analyse croisée avec notre base médicale</p>
+      </div>
+      
+      <div class="text-center group">
+        <div class="w-20 h-20 bg-[#E8513E]/10 rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:bg-[#E8513E] group-hover:scale-110">
+          <span class="text-2xl font-bold text-[#E8513E] group-hover:text-white">4</span>
+        </div>
+        <h3 class="font-bold text-lg mb-2">Recommandations</h3>
+        <p class="text-gray-600">Obtenez des pistes et conseils personnalisés</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Disclaimer -->
+<section class="py-8 bg-red-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-start gap-4 p-4 bg-white rounded-lg shadow-sm">
+      <div class="text-red-500 text-2xl">⚠️</div>
+      <div>
+        <p class="font-semibold text-gray-900">Information importante</p>
+        <p class="text-gray-700">
+          Cet agent est un outil d'aide à la décision. Il ne remplace pas un médecin. 
+          En cas d'urgence, appelez immédiatement le 15 (SAMU) ou votre médecin traitant.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-20 bg-gradient-to-r from-[#E8513E] to-red-600 text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <h2 class="text-3xl md:text-4xl font-bold mb-4">
+      Prêt à prendre soin de votre santé ?
+    </h2>
+    <p class="text-xl mb-8 opacity-90">
+      Commencez votre analyse dès maintenant, gratuitement
+    </p>
+    <button routerLink="/agent" class="bg-white text-[#E8513E] px-8 py-4 rounded-lg font-bold text-lg hover:shadow-2xl transform hover:scale-105 transition-all">
+      🚀 Lancer l'analyse
+    </button>
+    <p class="mt-4 text-sm opacity-80">Aucune inscription requise • 100% confidentiel</p>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-black text-white py-6">
+  <div>
+    <div class="border-gray-800  text-center text-gray-400 text-sm">
+      <p>&copy; 2026 MedicalAgent. Tous droits réservés.</p>
+    </div>
+  </div>
+</footer>
