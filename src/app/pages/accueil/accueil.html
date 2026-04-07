@@ -2,7 +2,8 @@
 <nav class="fixed top-0 w-full bg-white/95 backdrop-blur-md z-50 shadow-sm">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center py-4">
-      <!-- Logo -->
+      
+      <!-- Logo (toujours visible) -->
       <div class="flex items-center space-x-2">
         <div class="w-10 h-10 bg-[#E8513E] rounded-xl flex items-center justify-center">
           <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -12,17 +13,33 @@
         <h1 class="text-3xl font-bold text-gray-800">J.A.R.V.I.S</h1>
       </div>
       
-      <!-- Desktop Menu -->
+      <!-- Menu Desktop -->
       <div class="hidden md:flex space-x-8">
         <a href="#features" class="text-gray-700 hover:text-[#E8513E] transition-colors">Fonctionnalités</a>
         <a href="#how-it-works" class="text-gray-700 hover:text-[#E8513E] transition-colors">Comment ça marche</a>
-        <a routerLink="/login" class="text-gray-700 hover:text-[#E8513E] transition-colors">Connexion</a>
+        
+        <a *ngIf="!isLoggedIn" routerLink="/login" class="text-gray-700 hover:text-[#E8513E] transition-colors">
+          Connexion
+        </a>
+        
+        <div *ngIf="isLoggedIn" class="flex items-center space-x-4">
+          <a routerLink="/profile" class="text-gray-700 hover:text-[#E8513E] transition-colors">
+            Mon compte
+          </a>
+          <button (click)="logout()" class="text-red-600 hover:text-red-700 transition-colors font-medium">
+            Déconnexion
+          </button>
+        </div>
       </div>
       
-      <!-- CTA Button -->
-      <button routerLink="/agent" class="bg-[#E8513E] text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all hover:scale-105">
+      <button *ngIf="!isLoggedIn" routerLink="/login" class="bg-[#E8513E] text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all hover:scale-105">
         Commencer
       </button>
+      
+      <button *ngIf="isLoggedIn" routerLink="/agent" class="bg-[#E8513E] text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all hover:scale-105">
+        🚀 Accéder à l'agent
+      </button>
+      
     </div>
   </div>
 </nav>
@@ -31,7 +48,6 @@
 <section class="pt-32 pb-20 overflow-hidden">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="grid md:grid-cols-2 gap-12 items-center">
-      <!-- Left Content -->
       <div class="animate-slide-up">
         <div class="inline-block px-4 py-2 bg-red-50 rounded-full mb-6">
           <span class="text-[#E8513E] font-semibold text-sm">IA Médicale Avancée</span>
@@ -54,12 +70,11 @@
         </div>
       </div>
       
-      <!-- Right Image/Illustration -->
       <div class="relative animate-float">
         <div class="relative z-10">
           <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80"
-     alt="AI healthcare digital doctor"
-     class="rounded-2xl shadow-2xl hover:scale-105 transition duration-500">
+               alt="AI healthcare digital doctor"
+               class="rounded-2xl shadow-2xl hover:scale-105 transition duration-500">
         </div>
         <div class="absolute top-10 -right-10 w-40 h-40 bg-[#E8513E]/20 rounded-full blur-3xl"></div>
       </div>
@@ -80,46 +95,34 @@
     </div>
     
     <div class="grid md:grid-cols-3 gap-8">
-      <!-- Feature 1 -->
       <div class="bg-white rounded-2xl p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
         <div class="w-16 h-16 bg-[#E8513E]/10 rounded-2xl flex items-center justify-center mb-6">
           <svg class="w-8 h-8 text-[#E8513E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
           </svg>
         </div>
         <h3 class="text-xl font-bold mb-3">Analyse Intelligente</h3>
-        <p class="text-gray-600">
-          Notre IA analyse vos symptômes avec précision et vous guide vers les bonnes questions.
-        </p>
+        <p class="text-gray-600">Notre IA analyse vos symptômes avec précision et vous guide vers les bonnes questions.</p>
       </div>
       
-      <!-- Feature 2 -->
       <div class="bg-white rounded-2xl p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
         <div class="w-16 h-16 bg-[#E8513E]/10 rounded-2xl flex items-center justify-center mb-6">
           <svg class="w-8 h-8 text-[#E8513E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
         </div>
         <h3 class="text-xl font-bold mb-3">Rapide & Efficace</h3>
-        <p class="text-gray-600">
-          Obtenez des résultats en moins de 5 minutes, 24h/24 et 7j/7.
-        </p>
+        <p class="text-gray-600">Obtenez des résultats en moins de 5 minutes, 24h/24 et 7j/7.</p>
       </div>
       
-      <!-- Feature 3 -->
       <div class="bg-white rounded-2xl p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
         <div class="w-16 h-16 bg-[#E8513E]/10 rounded-2xl flex items-center justify-center mb-6">
           <svg class="w-8 h-8 text-[#E8513E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                  d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
         </div>
         <h3 class="text-xl font-bold mb-3">Alertes Urgences</h3>
-        <p class="text-gray-600">
-          Détection automatique des situations critiques avec recommandations immédiates.
-        </p>
+        <p class="text-gray-600">Détection automatique des situations critiques avec recommandations immédiates.</p>
       </div>
     </div>
   </div>
@@ -171,7 +174,6 @@
   </div>
 </section>
 
-
 <!-- Disclaimer -->
 <section class="py-8 bg-red-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -206,9 +208,18 @@
 
 <!-- Footer -->
 <footer class="bg-gradient-to-r from-[#E8513E] to-red-600 text-white py-6">
-  <div>
-    <div class="border-gray-800  text-center  text-sm">
-      <p>&copy; 2026 J.A.R.V.I.S. Tous droits réservés.</p>
-    </div>
+  <div class="text-center text-sm">
+    <p>&copy; 2026 J.A.R.V.I.S. Tous droits réservés.</p>
   </div>
 </footer>
+
+<!-- Modal -->
+<app-confirm-modal 
+  [isOpen]="showLogoutModal"
+  title="Déconnexion"
+  message="Êtes-vous sûr de vouloir vous déconnecter ?"
+  confirmText="Se déconnecter"
+  cancelText="Annuler"
+  (confirm)="confirmLogout()"
+  (cancel)="cancelLogout()">
+</app-confirm-modal>
