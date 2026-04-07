@@ -34,7 +34,7 @@ export class ChatMessage {
     }
   }
 
-  private getFrenchBoyVoice(): SpeechSynthesisVoice | null {
+  private getFrenchFemaleVoice(): SpeechSynthesisVoice | null {
     // Filtrer uniquement les voix françaises
     const frenchVoices = this.availableVoices.filter(voice => 
       voice.lang.startsWith('fr-')
@@ -42,50 +42,46 @@ export class ChatMessage {
     
     console.log('Voix françaises disponibles:', frenchVoices.map(v => v.name));
     
-    // Motifs pour trouver une voix de garçon/homme en français
-    const malePatterns = [
-      /homme/i,
-      /garçon/i,
-      /male/i,
-      /masculin/i,
-      /thomas/i,
-      /pierre/i,
-      /luc/i,
-      /jean/i,
-      /paul/i,
-      /henri/i,
-      /boy/i,
-      /young/i,
-      /jeune/i,
-      /enfant/i,
-      /kid/i
+    // Motifs pour trouver une voix féminine en français
+    const femalePatterns = [
+      /femme/i,
+      /fille/i,
+      /female/i,
+      /feminin/i,
+      /amelie/i,
+      /julie/i,
+      /sophie/i,
+      /marie/i,
+      /claire/i,
+      /lucie/i,
+      /girl/i,
+      /woman/i,
+      /Google français/i  // Les voix Google sont souvent féminines par défaut
     ];
     
-    // Chercher une voix française masculine
-    for (const pattern of malePatterns) {
-      const pattern = /(Paul|Google français)/i;
-
+    // Chercher une voix française féminine
+    for (const pattern of femalePatterns) {
       const voice = frenchVoices.find(v => pattern.test(v.name));
-
       if (voice) {
-        console.log('✅ Voix de garçon trouvée:', voice.name);
+        console.log('✅ Voix féminine trouvée:', voice.name);
         return voice;
       }
     }
     
-    // Sur macOS, voix françaises spécifiques
-    const specificFrenchMaleVoices = frenchVoices.find(v => 
-      v.name.includes('Paul') || 
-      v.name.includes('Amelie') === false // Prendre la moins féminine
+    // Sur macOS, voix françaises spécifiques (Amelie est féminine)
+    const specificFrenchFemaleVoices = frenchVoices.find(v => 
+      v.name.includes('Amelie') || 
+      v.name.includes('Google français')
     );
     
-    if (specificFrenchMaleVoices) {
-      return specificFrenchMaleVoices;
+    if (specificFrenchFemaleVoices) {
+      console.log('✅ Voix féminine spécifique trouvée:', specificFrenchFemaleVoices.name);
+      return specificFrenchFemaleVoices;
     }
     
-    // Si aucune voix masculine trouvée, prendre la première voix française
+    // Si aucune voix féminine trouvée, prendre la première voix française
     if (frenchVoices.length > 0) {
-      console.warn('Aucune voix masculine trouvée, utilisation de la voix française par défaut');
+      console.warn('Aucune voix féminine trouvée, utilisation de la voix française par défaut');
       return frenchVoices[0];
     }
     
@@ -125,18 +121,18 @@ export class ChatMessage {
     // Définir la langue en français
     this.currentUtterance.lang = 'fr-FR';
     
-    // Sélectionner la voix de garçon française
-    const boyVoice = this.getFrenchBoyVoice();
-    if (boyVoice) {
-      this.currentUtterance.voice = boyVoice;
-      console.log('Voix française sélectionnée:', boyVoice.name);
+    // Sélectionner la voix féminine française
+    const femaleVoice = this.getFrenchFemaleVoice();
+    if (femaleVoice) {
+      this.currentUtterance.voice = femaleVoice;
+      console.log('Voix française féminine sélectionnée:', femaleVoice.name);
     } else {
       console.warn('Aucune voix française trouvée, utilisation de la voix par défaut');
     }
     
-    // Ajuster les paramètres pour une voix de garçon
-    this.currentUtterance.rate = 1.3;      // Vitesse normale
-    this.currentUtterance.pitch = 1.6;     // Pitch plus élevé pour une voix de garçon
+    // Ajuster les paramètres pour une voix féminine
+    this.currentUtterance.rate = 1.1;      // Vitesse légèrement plus lente
+    this.currentUtterance.pitch = 1.2;     // Pitch normal pour voix féminine
     this.currentUtterance.volume = 1;
 
     this.currentUtterance.onstart = () => {
