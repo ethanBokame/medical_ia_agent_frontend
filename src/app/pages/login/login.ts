@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Drawer } from '../../components/drawer/drawer';
+import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-login',
@@ -12,6 +13,13 @@ import { Drawer } from '../../components/drawer/drawer';
   styleUrls: ['./login.css']
 })
 export default class Login {
+
+  credentials = {
+    email: '',
+    password: ''
+  };
+
+
   email: string = '';
   password: string = '';
   isLoading: boolean = false;
@@ -19,39 +27,62 @@ export default class Login {
   rememberMe: boolean = false;
   errorMessage: string = '';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private auth: Auth
+  ) {}
 
-  onLogin() {
-    // Validation simple
-    if (!this.email || !this.password) {
-      this.errorMessage = 'Veuillez remplir tous les champs';
-      return;
-    }
-
-    if (!this.isValidEmail(this.email)) {
-      this.errorMessage = 'Veuillez entrer un email valide';
-      return;
-    }
-
-    this.isLoading = true;
+  onSubmit(){
     this.errorMessage = '';
+    this.isLoading = true;
 
-    // Simulation d'appel API
-    setTimeout(() => {
-      this.isLoading = false;
-      // Simulation de connexion réussie
-      if (this.email === 'demo@medichat.com' && this.password === 'demo123') {
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userEmail', this.email);
-        if (this.rememberMe) {
-          localStorage.setItem('rememberMe', 'true');
+    this.auth.login(this.credentials).subscribe({
+      next: (response) => {
+        const token = response.data?.token;
+        if(token) {
+          this.auth.saveToken(token);
         }
-        this.router.navigate(['/agent']);
-      } else {
-        this.errorMessage = 'Email ou mot de passe incorrect';
+        this.isLoading = false;
+        this.router.navigate(['/']);
+      },
+      error: (error) => {
+        this.errorMessage = error.error?.message || 'Email ou mot de passe incorect';
+        this.isLoading = false
       }
-    }, 1500);
+    });
   }
+
+  // onLogin() {
+  //   // Validation simple
+  //   if (!this.email || !this.password) {
+  //     this.errorMessage = 'Veuillez remplir tous les champs';
+  //     return;
+  //   }
+
+  //   if (!this.isValidEmail(this.email)) {
+  //     this.errorMessage = 'Veuillez entrer un email valide';
+  //     return;
+  //   }
+
+  //   this.isLoading = true;
+  //   this.errorMessage = '';
+
+  //   // Simulation d'appel API
+  //   setTimeout(() => {
+  //     this.isLoading = false;
+  //     // Simulation de connexion réussie
+  //     if (this.email === 'demo@medichat.com' && this.password === 'demo123') {
+  //       localStorage.setItem('isLoggedIn', 'true');
+  //       localStorage.setItem('userEmail', this.email);
+  //       if (this.rememberMe) {
+  //         localStorage.setItem('rememberMe', 'true');
+  //       }
+  //       this.router.navigate(['/agent']);
+  //     } else {
+  //       this.errorMessage = 'Email ou mot de passe incorrect';
+  //     }
+  //   }, 1500);
+  // }
 
   private isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
