@@ -28,7 +28,7 @@ export default class Agent implements AfterViewChecked {
   isLiveMode = false;
   isLoading = false;
   showWelcomeTitle = true;
-
+  isDrawerOpen = false;
 
   constructor(private cdr: ChangeDetectorRef, private router: Router) {}
 
@@ -45,9 +45,26 @@ export default class Agent implements AfterViewChecked {
     }
   }
 
-  
+  toggleDrawer() {
+    this.isDrawerOpen = !this.isDrawerOpen;
+    if (this.isDrawerOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    this.cdr.detectChanges();
+  }
 
+  closeDrawer() {
+    this.isDrawerOpen = false;
+    document.body.style.overflow = '';
+    this.cdr.detectChanges();
+  }
 
+  navigateTo(route: string) {
+    this.router.navigate([route]);
+    this.closeDrawer();
+  }
 
   async onSendMessage(prompt: string) {
     if (!prompt.trim()) return;
