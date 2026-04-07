@@ -1,11 +1,10 @@
 import { Component, Output, EventEmitter, ElementRef, ViewChild, AfterViewInit, HostListener, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Drawer } from '../drawer/drawer';
 
 @Component({
   selector: 'app-live-mode',
   standalone: true,
-  imports: [CommonModule, Drawer],
+  imports: [CommonModule],
   templateUrl: './live-mode.html',
   styleUrls: ['./live-mode.css'],
 })
@@ -22,6 +21,8 @@ export class LiveMode implements AfterViewInit, OnDestroy {
   audioIntensity = 0;
   barHeights: number[] = [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4];
   glowOpacity = 0.2;
+  recognitionError = false;
+  errorMessage = '';
   
   // Privés
   private recognition: any = null;
@@ -39,6 +40,9 @@ export class LiveMode implements AfterViewInit, OnDestroy {
   private readonly silenceDelay = 3000; // 3 secondes
   private isInitialized: boolean = false;
   private availableVoices: SpeechSynthesisVoice[] = [];
+  private reconnectAttempts: number = 0;
+  private maxReconnectAttempts: number = 5;
+  private reconnectTimeout: any = null;
 
   constructor(private cdr: ChangeDetectorRef) {
     this.speechSynthesis = window.speechSynthesis;
@@ -66,29 +70,14 @@ export class LiveMode implements AfterViewInit, OnDestroy {
     
     // Motifs pour trouver une voix de garçon/homme en français
     const malePatterns = [
-      /homme/i,
-      /garçon/i,
-      /male/i,
-      /masculin/i,
-      /thomas/i,
-      /pierre/i,
-      /luc/i,
-      /jean/i,
-      /paul/i,
-      /henri/i,
-      /boy/i,
-      /young/i,
-      /jeune/i,
-      /enfant/i,
-      /kid/i
+      /homme/i, /garçon/i, /male/i, /masculin/i, /thomas/i,
+      /pierre/i, /luc/i, /jean/i, /paul/i, /henri/i, /boy/i,
+      /young/i, /jeune/i, /enfant/i, /kid/i, /Google français/i
     ];
     
     // Chercher une voix française masculine
     for (const pattern of malePatterns) {
-      const pattern = /(Paul|Google français)/i;
-
       const voice = frenchVoices.find(v => pattern.test(v.name));
-
       if (voice) {
         console.log('✅ Voix de garçon trouvée:', voice.name);
         return voice;
@@ -170,12 +159,16 @@ export class LiveMode implements AfterViewInit, OnDestroy {
       
     } catch (error) {
       console.error('❌ Erreur microphone:', error);
-      this.startSpeechRecognition();
+      this.errorMessage = 'Impossible d\'accéder au microphone';
+      this.recognitionError = true;
+      this.cdr.detectChanges();
     }
   }
 
   private startAudioAnalysis() {
-    const dataArray = new Uint8Array(this.analyserNode!.frequencyBinCount);
+    if (!this.analyserNode) return;
+    
+    const dataArray = new Uint8Array(this.analyserNode.frequencyBinCount);
     
     const analyze = () => {
       if (!this.analyserNode || !this.isInitialized) return;
@@ -291,62 +284,131 @@ export class LiveMode implements AfterViewInit, OnDestroy {
   private startSpeechRecognition() {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       console.error('❌ Reconnaissance vocale non supportée par le navigateur');
+      this.errorMessage = 'Reconnaissance vocale non supportée par le navigateur';
+      this.recognitionError = true;
+      this.cdr.detectChanges();
       return;
     }
     
-    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-    this.recognition = new SpeechRecognition();
-    this.recognition.lang = 'fr-FR';
-    this.recognition.continuous = true;
-    this.recognition.interimResults = true;
-    this.recognition.maxAlternatives = 1;
-    
-    this.recognition.onstart = () => {
-      console.log('🎙️ Reconnaissance vocale ACTIVE - Parlez maintenant');
-      this.cdr.detectChanges();
-    };
-    
-    this.recognition.onresult = (event: any) => {
-      let latestFinal = '';
+    try {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      this.recognition = new SpeechRecognition();
+      this.recognition.lang = 'fr-FR';
+      this.recognition.continuous = true;
+      this.recognition.interimResults = true;
+      this.recognition.maxAlternatives = 1;
       
-      for (let i = event.results.length - 1; i >= 0; i--) {
-        if (event.results[i].isFinal) {
-          latestFinal = event.results[i][0].transcript;
-          break;
-        }
-      }
-      
-      if (latestFinal && latestFinal !== this.lastMessageSent) {
-        this.finalTranscript = latestFinal;
-        console.log('🎤 [FINAL]', this.finalTranscript);
+      this.recognition.onstart = () => {
+        console.log('🎙️ Reconnaissance vocale ACTIVE - Parlez maintenant');
+        this.recognitionError = false;
+        this.errorMessage = '';
+        this.reconnectAttempts = 0;
         this.cdr.detectChanges();
-      }
-    };
-    
-    this.recognition.onerror = (event: any) => {
-      console.error('❌ Erreur reconnaissance:', event.error);
-    };
-    
-    this.recognition.onend = () => {
-      console.log('⏸️ Reconnaissance vocale arrêtée');
-      this.cdr.detectChanges();
+      };
       
-      if (!this.isAiResponding && this.mediaStream && this.isInitialized) {
-        setTimeout(() => {
-          if (!this.isAiResponding && this.recognition && this.isInitialized) {
-            try {
-              this.recognition.start();
-              console.log('🔄 Reconnaissance redémarrée');
-              this.cdr.detectChanges();
-            } catch(e) {
-              console.log('❌ Impossible de redémarrer');
-            }
+      this.recognition.onresult = (event: any) => {
+        let latestFinal = '';
+        
+        for (let i = event.results.length - 1; i >= 0; i--) {
+          if (event.results[i].isFinal) {
+            latestFinal = event.results[i][0].transcript;
+            break;
           }
-        }, 500);
+        }
+        
+        if (latestFinal && latestFinal !== this.lastMessageSent) {
+          this.finalTranscript = latestFinal;
+          console.log('🎤 [FINAL]', this.finalTranscript);
+          this.cdr.detectChanges();
+        }
+      };
+      
+      this.recognition.onerror = (event: any) => {
+        console.error('❌ Erreur reconnaissance:', event.error);
+        
+        // Gestion des erreurs spécifiques
+        switch(event.error) {
+          case 'network':
+            this.errorMessage = 'Erreur réseau - Vérifiez votre connexion internet';
+            this.recognitionError = true;
+            this.scheduleReconnect();
+            break;
+          case 'not-allowed':
+            this.errorMessage = 'Permission microphone refusée - Veuillez autoriser l\'accès';
+            this.recognitionError = true;
+            break;
+          case 'no-speech':
+            // Pas d'erreur grave, juste pas de parole détectée
+            console.log('Aucune parole détectée');
+            break;
+          case 'audio-capture':
+            this.errorMessage = 'Problème de capture audio - Vérifiez votre microphone';
+            this.recognitionError = true;
+            this.scheduleReconnect();
+            break;
+          default:
+            this.errorMessage = `Erreur: ${event.error}`;
+            this.recognitionError = true;
+            this.scheduleReconnect();
+        }
+        this.cdr.detectChanges();
+      };
+      
+      this.recognition.onend = () => {
+        console.log('⏸️ Reconnaissance vocale arrêtée');
+        this.cdr.detectChanges();
+        
+        // Redémarrer uniquement si pas en train de répondre et toujours actif
+        if (!this.isAiResponding && this.mediaStream && this.isInitialized && !this.recognitionError) {
+          setTimeout(() => {
+            if (!this.isAiResponding && this.recognition && this.isInitialized) {
+              try {
+                this.recognition.start();
+                console.log('🔄 Reconnaissance redémarrée');
+                this.cdr.detectChanges();
+              } catch(e) {
+                console.log('❌ Impossible de redémarrer:', e);
+                this.scheduleReconnect();
+              }
+            }
+          }, 500);
+        }
+      };
+      
+      this.recognition.start();
+      
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'initialisation:', error);
+      this.errorMessage = 'Erreur d\'initialisation de la reconnaissance vocale';
+      this.recognitionError = true;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private scheduleReconnect() {
+    if (this.reconnectAttempts < this.maxReconnectAttempts && this.isInitialized && !this.isAiResponding) {
+      if (this.reconnectTimeout) {
+        clearTimeout(this.reconnectTimeout);
       }
-    };
-    
-    this.recognition.start();
+      
+      const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
+      console.log(`🔄 Tentative de reconnexion ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts} dans ${delay}ms`);
+      
+      this.reconnectTimeout = setTimeout(() => {
+        this.reconnectAttempts++;
+        if (this.recognition) {
+          try {
+            this.recognition.stop();
+          } catch(e) {}
+          this.recognition = null;
+        }
+        this.startSpeechRecognition();
+      }, delay);
+    } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error('❌ Échec de reconnexion après plusieurs tentatives');
+      this.errorMessage = 'Impossible de se connecter au service de reconnaissance vocale';
+      this.cdr.detectChanges();
+    }
   }
 
   async speakResponse(text: string) {
@@ -412,13 +474,14 @@ export class LiveMode implements AfterViewInit, OnDestroy {
         
         // Redémarrer la reconnaissance après un court délai
         setTimeout(() => {
-          if (this.recognition && !this.isAiResponding && this.isInitialized) {
+          if (this.recognition && !this.isAiResponding && this.isInitialized && !this.recognitionError) {
             try {
               this.recognition.start();
               console.log('🔄 Reconnaissance redémarrée après réponse - Vous pouvez poser une nouvelle question');
               this.cdr.detectChanges();
             } catch(e) {
               console.log('Erreur au redémarrage:', e);
+              this.scheduleReconnect();
             }
           }
         }, 500);
@@ -441,6 +504,10 @@ export class LiveMode implements AfterViewInit, OnDestroy {
   ngOnDestroy() {
     console.log('🔚 Destruction du Live Mode');
     this.isInitialized = false;
+    
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+    }
     
     if (this.animationFrame) {
       cancelAnimationFrame(this.animationFrame);
