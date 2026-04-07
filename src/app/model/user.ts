@@ -3,7 +3,8 @@ export class User {
     nom!: string;
     email!: string;
     updated_at!: Date;
-    created_at!: Date
+    created_at!: Date;
+    token?: string;
 }
 
 export interface LoginResponse {
