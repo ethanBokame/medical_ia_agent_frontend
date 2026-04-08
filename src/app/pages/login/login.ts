@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -19,9 +19,6 @@ export default class Login {
     password: ''
   };
 
-
-  email: string = '';
-  password: string = '';
   isLoading: boolean = false;
   showPassword: boolean = false;
   rememberMe: boolean = false;
@@ -29,60 +26,65 @@ export default class Login {
 
   constructor(
     private router: Router,
-    private auth: Auth
+    private auth: Auth,
+    private cdr: ChangeDetectorRef
   ) {}
 
-  onSubmit(){
+  onSubmit() {
     this.errorMessage = '';
     this.isLoading = true;
+    this.cdr.detectChanges(); // Force la mise à jour de l'UI
+
+    // Vérification que les credentials ne sont pas vides
+    if (!this.credentials.email || !this.credentials.password) {
+      this.errorMessage = 'Veuillez remplir tous les champs';
+      this.isLoading = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // Validation du format email
+    if (!this.isValidEmail(this.credentials.email)) {
+      this.errorMessage = 'Veuillez entrer un email valide';
+      this.isLoading = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    console.log('Tentative de connexion avec:', this.credentials);
 
     this.auth.login(this.credentials).subscribe({
       next: (response) => {
-        const token = response.data?.token;
+        console.log('Réponse reçue:', response);
+        const token = response.data?.token || response.token;
         if(token) {
           this.auth.saveToken(token);
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          this.router.navigate(['/']);
+        } else {
+          this.errorMessage = 'Token non reçu du serveur';
+          this.isLoading = false;
+          this.cdr.detectChanges();
         }
-        this.isLoading = false;
-        this.router.navigate(['/']);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Email ou mot de passe incorect';
-        this.isLoading = false
+        console.error('Erreur de connexion:', error);
+        
+        // Gestion spécifique des erreurs CORS
+        if (error.status === 0) {
+          this.errorMessage = 'Impossible de se connecter au serveur. Vérifiez votre connexion ou réessayez plus tard.';
+        } else if (error.status === 404) {
+          this.errorMessage = 'Service indisponible. Veuillez réessayer plus tard.';
+        } else {
+          this.errorMessage = error.error?.message || 'Email ou mot de passe incorrect';
+        }
+        
+        this.isLoading = false;
+        this.cdr.detectChanges(); // Force la mise à jour du message d'erreur
       }
     });
   }
-
-  // onLogin() {
-  //   // Validation simple
-  //   if (!this.email || !this.password) {
-  //     this.errorMessage = 'Veuillez remplir tous les champs';
-  //     return;
-  //   }
-
-  //   if (!this.isValidEmail(this.email)) {
-  //     this.errorMessage = 'Veuillez entrer un email valide';
-  //     return;
-  //   }
-
-  //   this.isLoading = true;
-  //   this.errorMessage = '';
-
-  //   // Simulation d'appel API
-  //   setTimeout(() => {
-  //     this.isLoading = false;
-  //     // Simulation de connexion réussie
-  //     if (this.email === 'demo@medichat.com' && this.password === 'demo123') {
-  //       localStorage.setItem('isLoggedIn', 'true');
-  //       localStorage.setItem('userEmail', this.email);
-  //       if (this.rememberMe) {
-  //         localStorage.setItem('rememberMe', 'true');
-  //       }
-  //       this.router.navigate(['/agent']);
-  //     } else {
-  //       this.errorMessage = 'Email ou mot de passe incorrect';
-  //     }
-  //   }, 1500);
-  // }
 
   private isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -91,16 +93,15 @@ export default class Login {
 
   onGoogleLogin() {
     console.log('Login avec Google');
-    // Implémentation Google OAuth
   }
 
   onAppleLogin() {
     console.log('Login avec Apple');
-    // Implémentation Apple OAuth
   }
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
+    this.cdr.detectChanges(); // Optionnel, pour forcer la mise à jour du bouton
   }
 
   goToRegister() {

@@ -1,12 +1,17 @@
-import { Component, ViewChild, ElementRef, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewChecked, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ChatMessage } from '../../components/chat-message/chat-message';
 import { PromptInput } from '../../components/prompt-input/prompt-input';
 import { LiveMode } from '../../components/live-mode/live-mode';
 import { Drawer } from '../../components/drawer/drawer';
+import { Conversation } from '../../components/conversation/conversation';
+import { ConversationService } from '../../services/conversation';
+import { Auth } from '../../services/auth';
+import { Message as MessageModel } from '../../model/conversation';
 
-interface Message {
+// Renommer l'interface locale pour éviter le conflit
+interface ChatMessageType {
   text: string;
   isUser: boolean;
   timestamp: Date;
@@ -15,22 +20,43 @@ interface Message {
 @Component({
   selector: 'app-agent',
   standalone: true,
-  imports: [CommonModule, ChatMessage, PromptInput, LiveMode, Drawer],
+  imports: [CommonModule, ChatMessage, PromptInput, LiveMode, Drawer, Conversation],
   templateUrl: './agent.html',
-  styleUrls: ['./agent.css']
+  styleUrls: ['./agent.css'],
+  providers: [ConversationService]
 })
-export default class Agent implements AfterViewChecked {
+export default class Agent implements OnInit, AfterViewChecked {
   @ViewChild('chatMessages') private chatMessagesContainer!: ElementRef;
   @ViewChild('liveModeComponent') liveModeComponent!: LiveMode;
   @ViewChild('drawer') drawerElement!: ElementRef;
   
-  messages: Message[] = [];
+  messages: ChatMessageType[] = [];
   isLiveMode = false;
   isLoading = false;
   showWelcomeTitle = true;
   isDrawerOpen = false;
+  currentConversationId: number | null = null;
+  isInitializing = false;
+  isAuthenticated = false;
 
-  constructor(private cdr: ChangeDetectorRef, private router: Router) {}
+  constructor(
+    private cdr: ChangeDetectorRef, 
+    private router: Router,
+    private conversationService: ConversationService,
+    private auth: Auth
+  ) {}
+
+  ngOnInit() {
+    this.checkAuthentication();
+  }
+
+  private checkAuthentication() {
+    this.isAuthenticated = this.auth.isLoggedIn();
+    if (!this.isAuthenticated) {
+      console.log('Non authentifié, redirection vers login...');
+      this.router.navigate(['/login']);
+    }
+  }
 
   ngAfterViewChecked() {
     this.scrollToBottom();
@@ -66,8 +92,60 @@ export default class Agent implements AfterViewChecked {
     this.closeDrawer();
   }
 
+  async initConversation() {
+    if (!this.auth.isLoggedIn()) {
+      console.log('Non authentifié, création de conversation impossible');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (this.currentConversationId !== null || this.isInitializing) {
+      return;
+    }
+
+    this.isInitializing = true;
+    
+    this.conversationService.createConversation().subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          // Correction: utiliser response.data.id au lieu de response.data.conversation_id
+          this.currentConversationId = response.data.id;
+          console.log('Conversation créée avec ID:', this.currentConversationId);
+        } else {
+          console.error('Erreur création conversation:', response.message);
+        }
+        this.isInitializing = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erreur API création conversation:', err);
+        this.isInitializing = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   async onSendMessage(prompt: string) {
+    if (!this.auth.isLoggedIn()) {
+      console.log('Non authentifié, envoi de message impossible');
+      this.router.navigate(['/login']);
+      return;
+    }
+
     if (!prompt.trim()) return;
+
+    if (this.currentConversationId === null) {
+      await this.initConversation();
+      // Attendre un peu que la conversation soit créée
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    // Vérifier à nouveau après l'initialisation
+    if (this.currentConversationId === null) {
+      console.error('Impossible de créer une conversation');
+      this.isLoading = false;
+      return;
+    }
 
     console.log('Message reçu:', prompt);
 
@@ -76,6 +154,7 @@ export default class Agent implements AfterViewChecked {
       this.cdr.detectChanges();
     }
 
+    // Ajouter le message utilisateur
     this.messages.push({
       text: prompt,
       isUser: true,
@@ -86,46 +165,112 @@ export default class Agent implements AfterViewChecked {
     this.isLoading = true;
     this.cdr.detectChanges();
 
-    // Simulation d'attente
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    this.isLoading = false;
-    const response = this.getAIResponse(prompt);
-    
-    this.messages.push({
-      text: response,
-      isUser: false,
-      timestamp: new Date()
+    this.conversationService.sendMessage(this.currentConversationId, prompt).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          const agentMessage = response.data;
+          console.log('Message envoyé, réponse reçue:', agentMessage);
+          
+          this.isLoading = false;
+          
+          // Ajouter la réponse de l'agent
+          this.messages.push({
+            text: agentMessage.content,
+            isUser: false,
+            timestamp: new Date(agentMessage.created_at)
+          });
+          this.cdr.detectChanges();
+          
+          // Faire parler l'IA en mode live
+          if (this.isLiveMode && this.liveModeComponent) {
+            console.log('IA répond vocalement:', agentMessage.content);
+            this.liveModeComponent.speakResponse(agentMessage.content);
+            this.cdr.detectChanges();
+          }
+        } else {
+          console.error('Erreur envoi message:', response.message);
+          this.isLoading = false;
+          
+          this.messages.push({
+            text: response.message || "Désolé, une erreur s'est produite. Veuillez réessayer.",
+            isUser: false,
+            timestamp: new Date()
+          });
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error('Erreur API envoi message:', err);
+        this.isLoading = false;
+        
+        this.messages.push({
+          text: "Désolé, une erreur s'est produite. Veuillez vérifier votre connexion.",
+          isUser: false,
+          timestamp: new Date()
+        });
+        this.cdr.detectChanges();
+      }
     });
-    this.cdr.detectChanges();
-    
-    // Faire parler l'IA en mode live
-    if (this.isLiveMode && this.liveModeComponent) {
-      console.log('IA répond vocalement:', response);
-      await this.liveModeComponent.speakResponse(response);
-      this.cdr.detectChanges();
-    }
   }
 
   onToggleLiveMode() {
+    if (!this.auth.isLoggedIn()) {
+      console.log('Non authentifié, activation du live mode impossible');
+      this.router.navigate(['/login']);
+      return;
+    }
+    
     this.isLiveMode = !this.isLiveMode;
     console.log('Live mode:', this.isLiveMode ? 'activé' : 'désactivé');
     this.cdr.detectChanges();
   }
 
   onReceiveTranscript(transcript: string) {
+    if (!this.auth.isLoggedIn()) {
+      console.log('Non authentifié, traitement du transcript impossible');
+      this.router.navigate(['/login']);
+      return;
+    }
+    
     console.log('Transcript reçu:', transcript);
     this.onSendMessage(transcript);
   }
 
-  private getAIResponse(userMessage: string): string {
-    const responses = [
-      "Bonjour, je comprends votre préoccupation. Pouvez-vous me donner plus de détails sur vos symptômes ?",
-      "D'après ce que vous décrivez, je vous recommande de consulter un médecin généraliste. Puis-je vous aider autrement ?",
-      "Voici quelques conseils qui pourraient vous aider en attendant votre consultation médicale. Reposez-vous et buvez beaucoup d'eau.",
-      "Je ne suis pas un médecin, mais je peux vous orienter vers des ressources fiables. Voulez-vous que je vous donne plus d'informations ?",
-      "Merci pour votre message. Un professionnel de santé pourra mieux vous aider. Souhaitez-vous que je note vos symptômes ?"
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
+  loadConversation(conversationId: number) {
+    if (!this.auth.isLoggedIn()) {
+      console.log('Non authentifié, chargement de conversation impossible');
+      this.router.navigate(['/login']);
+      return;
+    }
+    
+    this.currentConversationId = conversationId;
+    this.isLoading = true;
+    this.cdr.detectChanges();
+    
+    this.conversationService.getConversationById(conversationId).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          // Utiliser response.data.messages
+          const loadedMessages: ChatMessageType[] = response.data.messages.map(msg => ({
+            text: msg.content,
+            isUser: msg.sender === 'user',
+            timestamp: new Date(msg.created_at)
+          }));
+          
+          this.messages = loadedMessages;
+          this.showWelcomeTitle = this.messages.length === 0;
+          console.log('Conversation chargée:', loadedMessages.length, 'messages');
+        } else {
+          console.error('Erreur chargement conversation:', response.message);
+        }
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erreur API chargement conversation:', err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 }
