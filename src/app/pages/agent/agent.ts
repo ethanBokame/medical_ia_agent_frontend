@@ -8,9 +8,7 @@ import { Drawer } from '../../components/drawer/drawer';
 import { Conversation } from '../../components/conversation/conversation';
 import { ConversationService } from '../../services/conversation';
 import { Auth } from '../../services/auth';
-import { Message as MessageModel } from '../../model/conversation';
 
-// Renommer l'interface locale pour éviter le conflit
 interface ChatMessageType {
   text: string;
   isUser: boolean;
@@ -108,7 +106,6 @@ export default class Agent implements OnInit, AfterViewChecked {
     this.conversationService.createConversation().subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          // Correction: utiliser response.data.id au lieu de response.data.conversation_id
           this.currentConversationId = response.data.id;
           console.log('Conversation créée avec ID:', this.currentConversationId);
         } else {
@@ -136,11 +133,9 @@ export default class Agent implements OnInit, AfterViewChecked {
 
     if (this.currentConversationId === null) {
       await this.initConversation();
-      // Attendre un peu que la conversation soit créée
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    // Vérifier à nouveau après l'initialisation
     if (this.currentConversationId === null) {
       console.error('Impossible de créer une conversation');
       this.isLoading = false;
@@ -154,7 +149,6 @@ export default class Agent implements OnInit, AfterViewChecked {
       this.cdr.detectChanges();
     }
 
-    // Ajouter le message utilisateur
     this.messages.push({
       text: prompt,
       isUser: true,
@@ -166,36 +160,48 @@ export default class Agent implements OnInit, AfterViewChecked {
     this.cdr.detectChanges();
 
     this.conversationService.sendMessage(this.currentConversationId, prompt).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          const agentMessage = response.data;
-          console.log('Message envoyé, réponse reçue:', agentMessage);
-          
-          this.isLoading = false;
-          
-          // Ajouter la réponse de l'agent
-          this.messages.push({
-            text: agentMessage.content,
-            isUser: false,
-            timestamp: new Date(agentMessage.created_at)
-          });
-          this.cdr.detectChanges();
-          
-          // Faire parler l'IA en mode live
-          if (this.isLiveMode && this.liveModeComponent) {
-            console.log('IA répond vocalement:', agentMessage.content);
-            this.liveModeComponent.speakResponse(agentMessage.content);
-            this.cdr.detectChanges();
+      next: (response: any) => {
+        console.log('RESPONSE COMPLÈTE:', response);
+        
+        this.isLoading = false;
+        
+        let agentText = "Désolé, je n'ai pas pu traiter votre demande.";
+        
+        if (response.success) {
+          // Essayer différentes structures possibles
+          if (response.data) {
+            if (typeof response.data === 'string') {
+              agentText = response.data;
+            } else if (response.data.content) {
+              agentText = response.data.content;
+            } else if (response.data.message) {
+              agentText = response.data.message;
+            } else if (response.data.text) {
+              agentText = response.data.text;
+            } else if (response.data.response) {
+              agentText = response.data.response;
+            } else {
+              agentText = JSON.stringify(response.data);
+            }
+          } else if (response.message) {
+            agentText = response.message;
           }
         } else {
-          console.error('Erreur envoi message:', response.message);
-          this.isLoading = false;
-          
-          this.messages.push({
-            text: response.message || "Désolé, une erreur s'est produite. Veuillez réessayer.",
-            isUser: false,
-            timestamp: new Date()
-          });
+          agentText = response.message || "Une erreur est survenue";
+        }
+        
+        console.log('Message agent extrait:', agentText);
+        
+        this.messages.push({
+          text: agentText,
+          isUser: false,
+          timestamp: new Date()
+        });
+        this.cdr.detectChanges();
+        
+        if (this.isLiveMode && this.liveModeComponent) {
+          console.log('IA répond vocalement:', agentText);
+          this.liveModeComponent.speakResponse(agentText);
           this.cdr.detectChanges();
         }
       },
@@ -248,13 +254,26 @@ export default class Agent implements OnInit, AfterViewChecked {
     this.cdr.detectChanges();
     
     this.conversationService.getConversationById(conversationId).subscribe({
-      next: (response) => {
+      next: (response: any) => {
+        console.log('Réponse API conversation détaillée:', response);
+        
         if (response.success && response.data) {
-          // Utiliser response.data.messages
-          const loadedMessages: ChatMessageType[] = response.data.messages.map(msg => ({
+          let messagesList: any[] = [];
+          
+          if (response.data.messages && Array.isArray(response.data.messages)) {
+            messagesList = response.data.messages;
+          } else if (response.data.data && response.data.data.messages) {
+            messagesList = response.data.data.messages;
+          } else if (Array.isArray(response.data)) {
+            messagesList = response.data;
+          }
+          
+          console.log('Messages trouvés:', messagesList.length);
+          
+          const loadedMessages: ChatMessageType[] = messagesList.map((msg: any) => ({
             text: msg.content,
             isUser: msg.sender === 'user',
-            timestamp: new Date(msg.created_at)
+            timestamp: msg.created_at ? new Date(msg.created_at) : new Date()
           }));
           
           this.messages = loadedMessages;
