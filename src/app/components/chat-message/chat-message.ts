@@ -1,4 +1,4 @@
-import { Component, Input, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -8,13 +8,14 @@ import { CommonModule } from '@angular/common';
   templateUrl: './chat-message.html',
   styleUrls: ['./chat-message.css'],
 })
-export class ChatMessage {
+export class ChatMessage implements OnInit, OnDestroy {
   @Input() message = '';
   @Input() isUser = false;
-  @Input() timestamp = new Date();
+  @Input() timestamp: Date | string = new Date();
   
   isCopied = false;
   isSpeaking = false;
+  formattedTime = '';
   private speechSynthesis: SpeechSynthesis | null = null;
   private currentUtterance: SpeechSynthesisUtterance | null = null;
   private availableVoices: SpeechSynthesisVoice[] = [];
@@ -24,66 +25,64 @@ export class ChatMessage {
     this.loadVoices();
   }
 
+  ngOnInit() {
+    this.formatTimestamp();
+  }
+
+  private formatTimestamp() {
+    try {
+      const date = this.timestamp instanceof Date ? this.timestamp : new Date(this.timestamp);
+      if (date && !isNaN(date.getTime())) {
+        this.formattedTime = date.toLocaleTimeString('fr-FR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } else {
+        this.formattedTime = new Date().toLocaleTimeString('fr-FR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+    } catch (error) {
+      console.error('Erreur formatage date:', error);
+      this.formattedTime = new Date().toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+  }
+
   private loadVoices() {
     if (this.speechSynthesis) {
       this.speechSynthesis.onvoiceschanged = () => {
         this.availableVoices = this.speechSynthesis!.getVoices();
-        console.log('Voices disponibles:', this.availableVoices.map(v => ({name: v.name, lang: v.lang})));
       };
       this.availableVoices = this.speechSynthesis.getVoices();
     }
   }
 
   private getFrenchFemaleVoice(): SpeechSynthesisVoice | null {
-    // Filtrer uniquement les voix françaises
     const frenchVoices = this.availableVoices.filter(voice => 
       voice.lang.startsWith('fr-')
     );
     
-    console.log('Voix françaises disponibles:', frenchVoices.map(v => v.name));
-    
-    // Motifs pour trouver une voix féminine en français
     const femalePatterns = [
-      /femme/i,
-      /fille/i,
-      /female/i,
-      /feminin/i,
-      /amelie/i,
-      /julie/i,
-      /sophie/i,
-      /marie/i,
-      /claire/i,
-      /lucie/i,
-      /girl/i,
-      /woman/i,
-      /Google français/i  // Les voix Google sont souvent féminines par défaut
+      /femme/i, /fille/i, /female/i, /feminin/i, /amelie/i,
+      /julie/i, /sophie/i, /marie/i, /claire/i, /lucie/i,
+      /girl/i, /woman/i, /Google français/i
     ];
     
-    // Chercher une voix française féminine
     for (const pattern of femalePatterns) {
       const voice = frenchVoices.find(v => pattern.test(v.name));
-      if (voice) {
-        console.log('Voix féminine trouvée:', voice.name);
-        return voice;
-      }
+      if (voice) return voice;
     }
     
-    // Sur macOS, voix françaises spécifiques (Amelie est féminine)
     const specificFrenchFemaleVoices = frenchVoices.find(v => 
-      v.name.includes('Amelie') || 
-      v.name.includes('Google français')
+      v.name.includes('Amelie') || v.name.includes('Google français')
     );
     
-    if (specificFrenchFemaleVoices) {
-      console.log('Voix féminine spécifique trouvée:', specificFrenchFemaleVoices.name);
-      return specificFrenchFemaleVoices;
-    }
-    
-    // Si aucune voix féminine trouvée, prendre la première voix française
-    if (frenchVoices.length > 0) {
-      console.warn('Aucune voix féminine trouvée, utilisation de la voix française par défaut');
-      return frenchVoices[0];
-    }
+    if (specificFrenchFemaleVoices) return specificFrenchFemaleVoices;
+    if (frenchVoices.length > 0) return frenchVoices[0];
     
     return null;
   }
@@ -113,26 +112,18 @@ export class ChatMessage {
       return;
     }
 
-    // Annuler toute lecture en cours
     this.speechSynthesis.cancel();
 
     this.currentUtterance = new SpeechSynthesisUtterance(this.message);
-    
-    // Définir la langue en français
     this.currentUtterance.lang = 'fr-FR';
     
-    // Sélectionner la voix féminine française
     const femaleVoice = this.getFrenchFemaleVoice();
     if (femaleVoice) {
       this.currentUtterance.voice = femaleVoice;
-      console.log('Voix française féminine sélectionnée:', femaleVoice.name);
-    } else {
-      console.warn('Aucune voix française trouvée, utilisation de la voix par défaut');
     }
     
-    // Ajuster les paramètres pour une voix féminine
-    this.currentUtterance.rate = 1.1;      // Vitesse légèrement plus lente
-    this.currentUtterance.pitch = 1.2;     // Pitch normal pour voix féminine
+    this.currentUtterance.rate = 1.1;
+    this.currentUtterance.pitch = 1.2;
     this.currentUtterance.volume = 1;
 
     this.currentUtterance.onstart = () => {
@@ -153,7 +144,6 @@ export class ChatMessage {
       this.cdr.detectChanges();
     };
 
-    // Démarrer la lecture
     this.speechSynthesis.speak(this.currentUtterance);
   }
 

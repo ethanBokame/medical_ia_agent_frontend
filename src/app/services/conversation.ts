@@ -60,7 +60,7 @@ export class ConversationService {
    * Récupère une conversation par son ID avec ses messages
    */
   getConversationById(id: number): Observable<ConversationDetailResponse> {
-    const url = `${this.apiUrl}/${id}`;
+    const url = `${this.createUrl}/${id}`;
     console.log('GET Conversation by ID:', url);
     return this.http.get<ConversationDetailResponse>(url, { headers: this.getHeaders() });
   }
