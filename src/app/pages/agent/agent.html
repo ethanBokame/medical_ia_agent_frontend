@@ -6,6 +6,9 @@
 
   <!-- Menu Burger -->
   <app-drawer></app-drawer>
+  
+  <!-- Composant Conversation avec callback -->
+  <app-conversation (conversationSelected)="loadConversation($event)"></app-conversation>
 
   <!-- Mode Live -->
   <div *ngIf="isLiveMode" class="fixed inset-0 z-50 bg-white">

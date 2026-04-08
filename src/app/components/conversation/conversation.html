@@ -1,0 +1,87 @@
+<div class="fixed top-5 left-5 z-50">
+  <!-- Bouton avec icône de chat -->
+  <button 
+    (click)="toggleDiscussionList()" 
+    class="bg-[#E8513E] w-14 h-14 rounded-full cursor-pointer shadow-lg transition-all duration-300 hover:scale-105 relative flex items-center justify-center"
+  >
+    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+    </svg>
+    
+    <!-- Badge de notification -->
+    <span *ngIf="discussions.length > 0" 
+          class="absolute -top-1 -right-1 bg-red-400 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+      {{ discussions.length }}
+    </span>
+  </button>
+
+  <!-- Liste des discussions -->
+  <div *ngIf="isListVisible" 
+       class="absolute top-20 left-0 w-80 max-h-96 bg-white rounded-xl shadow-xl overflow-hidden animate-slideUp">
+    
+    <!-- En-tête -->
+    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+      <h3 class="text-base font-semibold text-gray-800 m-0">Discussions</h3>
+      <div class="flex gap-2">
+        <button (click)="createNewDiscussion()" 
+                [disabled]="creating"
+                class="bg-transparent border-none cursor-pointer text-gray-500 hover:bg-gray-200 w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Nouvelle discussion">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+        <button (click)="refreshDiscussions()" 
+                [disabled]="loading"
+                class="bg-transparent border-none cursor-pointer text-gray-500 hover:bg-gray-200 w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Rafraîchir">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+        <button (click)="closeList()" 
+                class="bg-transparent border-none text-2xl cursor-pointer text-gray-500 hover:bg-gray-200 w-8 h-8 flex items-center justify-center rounded transition-colors">
+          ×
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenu de la liste -->
+    <div class="max-h-80 overflow-y-auto custom-scrollbar">
+      <div *ngIf="creating" class="text-center py-10 px-5">
+        <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-[#E8513E]"></div>
+        <p class="text-gray-400 text-sm mt-2">Création de la discussion...</p>
+      </div>
+      
+      <div *ngIf="loading && !creating" class="text-center py-10 px-5">
+        <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-[#E8513E]"></div>
+        <p class="text-gray-400 text-sm mt-2">Chargement...</p>
+      </div>
+      
+      <div *ngIf="error && !loading && !creating" class="text-center py-10 px-5">
+        <p class="text-red-500 text-sm">{{ error }}</p>
+        <button (click)="refreshDiscussions()" class="mt-2 text-[#E8513E] text-sm hover:underline">
+          Réessayer
+        </button>
+      </div>
+      
+      <div *ngIf="!loading && !creating && !error && discussions.length === 0" class="text-center py-10 px-5 text-gray-400 text-sm">
+        <p>Aucune discussion</p>
+        <button (click)="createNewDiscussion()" class="mt-2 bg-[#E8513E] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#d43d2c] transition-colors">
+          Créer une discussion
+        </button>
+      </div>
+      
+      <!-- Liste des discussions cliquables -->
+      <div *ngFor="let discussion of discussions" 
+           (click)="selectConversation(discussion.id)"
+           class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer">
+        <div class="text-sm text-gray-600">
+          Discussion #{{ discussion.id }} - {{ formatDate(discussion.created_at) }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

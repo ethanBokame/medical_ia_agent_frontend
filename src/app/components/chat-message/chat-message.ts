@@ -63,7 +63,7 @@ export class ChatMessage {
     for (const pattern of femalePatterns) {
       const voice = frenchVoices.find(v => pattern.test(v.name));
       if (voice) {
-        console.log('✅ Voix féminine trouvée:', voice.name);
+        console.log('Voix féminine trouvée:', voice.name);
         return voice;
       }
     }
@@ -75,7 +75,7 @@ export class ChatMessage {
     );
     
     if (specificFrenchFemaleVoices) {
-      console.log('✅ Voix féminine spécifique trouvée:', specificFrenchFemaleVoices.name);
+      console.log('Voix féminine spécifique trouvée:', specificFrenchFemaleVoices.name);
       return specificFrenchFemaleVoices;
     }
     
