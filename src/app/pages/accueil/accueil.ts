@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ConfirmModal } from '../../components/confirm-modal/confirm-modal';
 import { Auth } from '../../services/auth';
-
+ 
 @Component({
   selector: 'app-accueil',
   standalone: true,
