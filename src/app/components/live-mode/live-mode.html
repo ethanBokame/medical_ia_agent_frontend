@@ -81,40 +81,37 @@
       </div>
     </div>
 
-    <!-- Indicateur de statut dynamique avec SVG intégré -->
+    <!-- Indicateur de statut dynamique -->
     <div class="mt-6">
       <div class="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-sm rounded-full shadow-lg">
-        <!-- Écran de chargement intégré dans les indicateurs -->
-        <div *ngIf="isLoading" class="flex items-center gap-3">
-        <div class="loading-video-container">
-          <img 
-            [src]="image"
-            width="40"
-            height="40"
-            class="rounded-full object-cover"
-            alt="loading"
-          />
-        </div>
-
-        <p class="text-gray-600 text-sm font-medium animate-pulse">
-          Je prends note...
-        </p>
-      </div>
         
-        <!-- Indicateurs normaux (cachés pendant le chargement) -->
-        <div *ngIf="!isLoading" class="flex items-center gap-3">
+        <!-- État "Je prends note" pendant l'envoi et l'attente de réponse -->
+        <div *ngIf="isSending" class="flex items-center gap-3">
+          <div class="writing-animation">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17 3L21 7L7 21H3V17L17 3Z" stroke="#E8513E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M15 5L19 9" stroke="#E8513E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5 19L9 15" stroke="#E8513E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 12L14 10" stroke="#E8513E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- Animation d'écriture -->
+              <path d="M3 21L7 17" stroke="#E8513E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="writing-stroke"/>
+            </svg>
+          </div>
+          <p class="text-gray-600 text-sm font-medium animate-pulse">
+            Je prends note...
+          </p>
+        </div>
+        
+        <!-- État normal (quand l'IA ne répond pas) -->
+        <div *ngIf="!isSending" class="flex items-center gap-3">
           <div class="relative">
             <div class="w-3 h-3 rounded-full animate-pulse" 
                  [class.bg-[#E8513E]]="!isAiResponding"
-                 [class.bg-green-500]="isAiResponding"
-                 [style.opacity]="isSpeaking || isAiResponding ? 1 : 0.5"></div>
-            <div class="absolute inset-0 w-3 h-3 rounded-full animate-ping opacity-75"
-                 [class.bg-[#E8513E]]="!isAiResponding"
-                 [class.bg-green-500]="isAiResponding"
-                 *ngIf="isSpeaking || isAiResponding"></div>
+                 [style.opacity]="isSpeaking ? 1 : 0.5"></div>
+            <div class="absolute inset-0 w-3 h-3 rounded-full animate-ping opacity-75 bg-[#E8513E]"
+                 *ngIf="isSpeaking"></div>
           </div>
           <span class="text-gray-700 font-medium">
-            <span *ngIf="isAiResponding">L'IA vous répond...</span>
             <span *ngIf="isSpeaking && !isAiResponding">Vous parlez...</span>
             <span *ngIf="!isSpeaking && !isAiResponding">Parlez maintenant</span>
           </span>
@@ -123,14 +120,15 @@
       
       <div class="sound-waves mt-4">
         <div class="wave" *ngFor="let i of [1,2,3,4,5]" 
-             [style.height.px]="isSpeaking || isAiResponding ? 20 + audioIntensity / 2.5 : 10"></div>
+             [style.height.px]="isSpeaking ? 20 + audioIntensity / 2.5 : 10"></div>
       </div>
     </div>
 
     <p class="text-gray-500 text-sm mt-6">
-      <span *ngIf="isAiResponding">L'assistant vous répond vocalement...</span>
-      <span *ngIf="isSpeaking && !isAiResponding">Je vous écoute... Parlez clairement</span>
-      <span *ngIf="!isSpeaking && !isAiResponding">Parlez, l'IA vous répondra immédiatement</span>
+      <span *ngIf="isSending">L'assistant analyse votre demande...</span>
+      <span *ngIf="isSpeaking && !isAiResponding && !isSending">Je vous écoute... Parlez clairement</span>
+      <span *ngIf="!isSpeaking && !isAiResponding && !isSending">Parlez, l'IA vous répondra immédiatement</span>
+      <span *ngIf="isAiResponding && !isSending">L'assistant vous répond...</span>
     </p>
   </div>
 </div>
