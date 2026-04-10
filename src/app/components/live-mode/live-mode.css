@@ -181,3 +181,32 @@
     transform: scaleY(1.5);
   }
 }
+
+/* Animation pour l'icône de stylo */
+.writing-animation {
+  display: inline-flex;
+  animation: bounce 0.5s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Animation pour le texte "Je prends note" */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}

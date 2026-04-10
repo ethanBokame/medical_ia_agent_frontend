@@ -1,5 +1,5 @@
 const image = {
-  writing: 'assets/images/pencil_write.gif'
+  writing: '../assets/images/pencil_write.gif'
 };
 
 

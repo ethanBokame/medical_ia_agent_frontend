@@ -139,6 +139,19 @@ export default class Agent implements OnInit, AfterViewChecked {
     if (this.currentConversationId === null) {
       console.error('Impossible de créer une conversation');
       this.isLoading = false;
+      
+      // Message d'erreur vocal et texte
+      const errorText = "Désolé, je n'ai pas pu créer la conversation. Veuillez réessayer.";
+      this.messages.push({
+        text: errorText,
+        isUser: false,
+        timestamp: new Date()
+      });
+      this.cdr.detectChanges();
+      
+      if (this.isLiveMode && this.liveModeComponent) {
+        this.liveModeComponent.speakResponse(errorText);
+      }
       return;
     }
 
@@ -168,7 +181,6 @@ export default class Agent implements OnInit, AfterViewChecked {
         let agentText = "Désolé, je n'ai pas pu traiter votre demande.";
         
         if (response.success) {
-          // Essayer différentes structures possibles
           if (response.data) {
             if (typeof response.data === 'string') {
               agentText = response.data;
@@ -181,7 +193,7 @@ export default class Agent implements OnInit, AfterViewChecked {
             } else if (response.data.response) {
               agentText = response.data.response;
             } else {
-              agentText = JSON.stringify(response.data);
+              agentText = "Merci pour votre message. Comment puis-je vous aider ?";
             }
           } else if (response.message) {
             agentText = response.message;
@@ -209,12 +221,34 @@ export default class Agent implements OnInit, AfterViewChecked {
         console.error('Erreur API envoi message:', err);
         this.isLoading = false;
         
+        // Message d'erreur plus naturel
+        let errorText = "";
+        
+        if (err.status === 500) {
+          errorText = "Désolé, le service rencontre un problème technique. Pouvez-vous répéter votre demande s'il vous plaît ?";
+        } else if (err.status === 0) {
+          errorText = "Je n'arrive pas à me connecter au serveur. Pouvez-vous vérifier votre connexion et réessayer ?";
+        } else if (err.status === 404) {
+          errorText = "Le service est indisponible pour le moment. Veuillez réessayer plus tard.";
+        } else if (err.status === 401) {
+          errorText = "Votre session a expiré. Veuillez vous reconnecter.";
+        } else {
+          errorText = "Je n'ai pas bien compris. Pouvez-vous reformuler votre demande s'il vous plaît ?";
+        }
+        
         this.messages.push({
-          text: "Désolé, une erreur s'est produite. Veuillez vérifier votre connexion.",
+          text: errorText,
           isUser: false,
           timestamp: new Date()
         });
         this.cdr.detectChanges();
+        
+        // Faire parler l'IA en mode live pour l'erreur
+        if (this.isLiveMode && this.liveModeComponent) {
+          console.log('IA dit message d\'erreur:', errorText);
+          this.liveModeComponent.speakResponse(errorText);
+          this.cdr.detectChanges();
+        }
       }
     });
   }

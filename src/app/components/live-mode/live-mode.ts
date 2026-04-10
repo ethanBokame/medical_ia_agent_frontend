@@ -1,19 +1,15 @@
 import { Component, Output, EventEmitter, ElementRef, ViewChild, AfterViewInit, HostListener, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import video from '../../constant/video';
-import image from '../../constant/image';
 import { Conversation } from '../conversation/conversation';
-
 
 @Component({
   selector: 'app-live-mode',
   standalone: true,
   imports: [CommonModule, Conversation],
-templateUrl: './live-mode.html',
+  templateUrl: './live-mode.html',
   styleUrls: ['./live-mode.css'],
 })
 export class LiveMode implements AfterViewInit, OnDestroy {
-  
   
   @Output() close = new EventEmitter<void>();
   @Output() sendTranscript = new EventEmitter<string>();
@@ -22,6 +18,7 @@ export class LiveMode implements AfterViewInit, OnDestroy {
   // États publics pour le template
   isSpeaking = false;
   isAiResponding = false;
+  isSending = false;  // Rendre public pour le template
   isWaitingSilence = false;
   audioIntensity = 0;
   barHeights: number[] = [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4];
@@ -29,8 +26,7 @@ export class LiveMode implements AfterViewInit, OnDestroy {
   recognitionError = false;
   errorMessage = '';
   welcomeMessagePlayed = false;
-  isLoading = true; // Nouvel état pour le chargement initial
-  image = image.writing
+  isLoading = true;
 
   // Privés
   private recognition: any = null;
@@ -42,7 +38,7 @@ export class LiveMode implements AfterViewInit, OnDestroy {
   private finalTranscript: string = '';
   private speechSynthesis: SpeechSynthesis | null = null;
   private currentUtterance: SpeechSynthesisUtterance | null = null;
-  private isSending: boolean = false;
+  private privateIsSending: boolean = false;
   private lastMessageSent: string = '';
   private lastSpeechTime: number = 0;
   private readonly silenceDelay = 3000;
@@ -65,7 +61,6 @@ export class LiveMode implements AfterViewInit, OnDestroy {
     if (this.speechSynthesis) {
       this.speechSynthesis.onvoiceschanged = () => {
         this.availableVoices = this.speechSynthesis!.getVoices();
-        console.log('Voices disponibles:', this.availableVoices.map(v => ({name: v.name, lang: v.lang})));
       };
       this.availableVoices = this.speechSynthesis.getVoices();
     }
@@ -76,46 +71,23 @@ export class LiveMode implements AfterViewInit, OnDestroy {
       voice.lang.startsWith('fr-')
     );
     
-    console.log('Voix françaises disponibles:', frenchVoices.map(v => v.name));
-    
     const femalePatterns = [
-      /femme/i,
-      /fille/i,
-      /female/i,
-      /feminin/i,
-      /amelie/i,
-      /julie/i,
-      /sophie/i,
-      /marie/i,
-      /claire/i,
-      /lucie/i,
-      /girl/i,
-      /woman/i,
-      /Google français/i
+      /femme/i, /fille/i, /female/i, /feminin/i, /amelie/i,
+      /julie/i, /sophie/i, /marie/i, /claire/i, /lucie/i,
+      /girl/i, /woman/i, /Google français/i
     ];
     
     for (const pattern of femalePatterns) {
       const voice = frenchVoices.find(v => pattern.test(v.name));
-      if (voice) {
-        console.log('Voix féminine trouvée:', voice.name);
-        return voice;
-      }
+      if (voice) return voice;
     }
     
     const specificFrenchFemaleVoices = frenchVoices.find(v => 
-      v.name.includes('Amelie') || 
-      v.name.includes('Google français')
+      v.name.includes('Amelie') || v.name.includes('Google français')
     );
     
-    if (specificFrenchFemaleVoices) {
-      console.log('Voix féminine spécifique trouvée:', specificFrenchFemaleVoices.name);
-      return specificFrenchFemaleVoices;
-    }
-    
-    if (frenchVoices.length > 0) {
-      console.warn('Aucune voix féminine trouvée, utilisation de la voix française par défaut');
-      return frenchVoices[0];
-    }
+    if (specificFrenchFemaleVoices) return specificFrenchFemaleVoices;
+    if (frenchVoices.length > 0) return frenchVoices[0];
     
     return null;
   }
@@ -127,7 +99,6 @@ export class LiveMode implements AfterViewInit, OnDestroy {
       this.initVoiceDetection();
       this.startBarAnimation();
       
-      // Afficher l'écran de chargement pendant 2 secondes
       setTimeout(() => {
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -189,7 +160,7 @@ export class LiveMode implements AfterViewInit, OnDestroy {
   private async playWelcomeMessage() {
     if (this.welcomeMessagePlayed) return;
     
-    const welcomeText = "Bonjour, je suis JARVICE, prête pour vous servir";
+    const welcomeText = "Bonjour, je suis JARVICE, votre agent I A medical, décrivez moi vos symptômes pour que je puisse vous aider.";
     console.log('🎙️ Message d\'accueil:', welcomeText);
     
     this.welcomeStartTime = Date.now();
@@ -218,9 +189,6 @@ export class LiveMode implements AfterViewInit, OnDestroy {
       const femaleVoice = this.getFrenchFemaleVoice();
       if (femaleVoice) {
         this.currentUtterance.voice = femaleVoice;
-        console.log('Voix féminine pour message d\'accueil:', femaleVoice.name);
-      } else {
-        console.warn('Aucune voix française trouvée');
       }
       
       this.currentUtterance.rate = 1.1;
@@ -228,13 +196,11 @@ export class LiveMode implements AfterViewInit, OnDestroy {
       this.currentUtterance.volume = 1;
       
       this.currentUtterance.onstart = () => {
-        console.log('Message d\'accueil en cours de lecture (micro coupé)');
         this.isAiResponding = true;
         this.cdr.detectChanges();
       };
       
       this.currentUtterance.onend = () => {
-        console.log('Message d\'accueil terminé');
         this.isAiResponding = false;
         this.currentUtterance = null;
         this.welcomeMessagePlayed = true;
@@ -328,7 +294,7 @@ export class LiveMode implements AfterViewInit, OnDestroy {
         const now = Date.now();
         
         if (now >= this.ignoreTranscriptUntil) {
-          if (this.audioIntensity > 5 && !this.isAiResponding) {
+          if (this.audioIntensity > 5 && !this.isAiResponding && !this.privateIsSending) {
             this.lastSpeechTime = now;
             if (!this.isSpeaking) {
               this.isSpeaking = true;
@@ -340,7 +306,7 @@ export class LiveMode implements AfterViewInit, OnDestroy {
               this.isSpeaking = false;
               this.cdr.detectChanges();
             }
-            if (!this.isAiResponding && !this.isSending && this.finalTranscript.trim()) {
+            if (!this.isAiResponding && !this.privateIsSending && this.finalTranscript.trim()) {
               const timeSinceLastSpeech = now - this.lastSpeechTime;
               const wasWaiting = this.isWaitingSilence;
               this.isWaitingSilence = timeSinceLastSpeech < this.silenceDelay && timeSinceLastSpeech > 0;
@@ -353,7 +319,7 @@ export class LiveMode implements AfterViewInit, OnDestroy {
           if (
             !this.isSpeaking &&
             !this.isAiResponding &&
-            !this.isSending &&
+            !this.privateIsSending &&
             this.finalTranscript.trim() &&
             now - this.lastSpeechTime > this.silenceDelay
           ) {
@@ -370,7 +336,7 @@ export class LiveMode implements AfterViewInit, OnDestroy {
   }
 
   private sendMessageImmediately() {
-    if (this.isSending || this.isAiResponding) {
+    if (this.privateIsSending || this.isAiResponding) {
       console.log('Envoi bloqué - déjà en cours');
       return;
     }
@@ -385,7 +351,8 @@ export class LiveMode implements AfterViewInit, OnDestroy {
     const message = this.finalTranscript.trim();
     
     if (message && message.length > 3 && message !== this.lastMessageSent) {
-      this.isSending = true;
+      this.privateIsSending = true;
+      this.isSending = true;  // Mettre à jour public
       this.lastMessageSent = message;
       this.lastSpeechTime = 0;
       this.isWaitingSilence = false;
@@ -397,11 +364,6 @@ export class LiveMode implements AfterViewInit, OnDestroy {
       this.cdr.detectChanges();
       
       this.sendTranscript.emit(message);
-      
-      setTimeout(() => {
-        this.isSending = false;
-        this.cdr.detectChanges();
-      }, 5000);
     }
   }
 
@@ -448,7 +410,6 @@ export class LiveMode implements AfterViewInit, OnDestroy {
       
       this.recognition.onresult = (event: any) => {
         if (Date.now() < this.ignoreTranscriptUntil) {
-          console.log('Transcript ignoré (période d\'ignorance)');
           return;
         }
         
@@ -501,9 +462,9 @@ export class LiveMode implements AfterViewInit, OnDestroy {
         console.log('⏸Reconnaissance vocale arrêtée');
         this.cdr.detectChanges();
         
-        if (!this.isAiResponding && this.mediaStream && this.isInitialized && !this.recognitionError && !this.isMicrophoneMuted) {
+        if (!this.isAiResponding && this.mediaStream && this.isInitialized && !this.recognitionError && !this.isMicrophoneMuted && !this.privateIsSending) {
           setTimeout(() => {
-            if (!this.isAiResponding && this.recognition && this.isInitialized && !this.isMicrophoneMuted) {
+            if (!this.isAiResponding && this.recognition && this.isInitialized && !this.isMicrophoneMuted && !this.privateIsSending) {
               try {
                 this.recognition.start();
                 console.log('Reconnaissance redémarrée');
@@ -554,9 +515,12 @@ export class LiveMode implements AfterViewInit, OnDestroy {
     }
   }
 
+  // Méthode publique appelée par le parent
   async speakResponse(text: string) {
     console.log('IA va parler:', text);
     
+    // Réinitialiser l'état d'envoi
+    this.privateIsSending = false;
     this.isSending = false;
     this.lastMessageSent = '';
     this.lastSpeechTime = 0;
@@ -591,9 +555,6 @@ export class LiveMode implements AfterViewInit, OnDestroy {
       const femaleVoice = this.getFrenchFemaleVoice();
       if (femaleVoice) {
         this.currentUtterance.voice = femaleVoice;
-        console.log('Voix française féminine sélectionnée:', femaleVoice.name);
-      } else {
-        console.warn('Aucune voix française trouvée, utilisation de la voix par défaut');
       }
       
       this.currentUtterance.rate = 1.1;
