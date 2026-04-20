@@ -2,10 +2,11 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth } from '../../services/auth';
+import { ConfirmModal } from '../../components/confirm-modal/confirm-modal';
 
 @Component({
   selector: 'app-drawer',
-  imports: [CommonModule],
+  imports: [CommonModule, ConfirmModal],
   templateUrl: './drawer.html',
   styleUrl: './drawer.css',
 })
@@ -18,6 +19,7 @@ export class Drawer {
   ) {}
 
   isDrawerOpen = false;
+  showLogoutModal = false;
   
   toggleDrawer() {
     this.isDrawerOpen = !this.isDrawerOpen;
@@ -51,9 +53,24 @@ export class Drawer {
     this.closeDrawer();
   }
 
-  logout() {
+  // Ouvre la modale de confirmation
+  openLogoutModal() {
+    this.showLogoutModal = true;
+    this.cdr.detectChanges();
+  }
+
+  // Confirme la déconnexion
+  confirmLogout() {
     this.auth.logout();
-    this.router.navigate(['/login']);
+    this.showLogoutModal = false;
     this.closeDrawer();
+    this.router.navigate(['/login']);
+    this.cdr.detectChanges();
+  }
+
+  // Annule la déconnexion
+  cancelLogout() {
+    this.showLogoutModal = false;
+    this.cdr.detectChanges();
   }
 }
