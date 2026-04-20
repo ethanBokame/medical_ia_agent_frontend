@@ -11,12 +11,17 @@ export class Auth {
   private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {
-    console.log('API URL:', this.apiUrl); // Ajoutez ce log pour vérifier
+    console.log('API URL:', this.apiUrl);
   }
 
   login(credentials: {email: string; password: string}): Observable<any> {
-    console.log('Appel API vers:', `${this.apiUrl}/login`);
+    console.log('Appel API login vers:', `${this.apiUrl}/login`);
     return this.http.post(`${this.apiUrl}/login`, credentials);
+  }
+  
+  register(userData: {nom: string; email: string; password: string}): Observable<any> {
+    console.log('Appel API register vers:', `${this.apiUrl}/register`);
+    return this.http.post(`${this.apiUrl}/register`, userData);
   }
   
   saveToken(token: string): void {
@@ -29,7 +34,7 @@ export class Auth {
   }
 
   logout(): void {
-    localStorage.removeItem('user-auth'); // Correction: 'user-auth' au lieu de 'user.auth'
+    localStorage.removeItem('user-auth');
   }
 
   isLoggedIn(): boolean {

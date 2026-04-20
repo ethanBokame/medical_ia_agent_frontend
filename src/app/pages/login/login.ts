@@ -93,6 +93,12 @@ export default class Login {
 
   onGoogleLogin() {
     console.log('Login avec Google');
+    this.errorMessage = 'Fonctionnalité à venir';
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.errorMessage = '';
+      this.cdr.detectChanges();
+    }, 3000);
   }
 
   onAppleLogin() {
@@ -106,7 +112,7 @@ export default class Login {
 
   goToRegister() {
     console.log('Redirection vers inscription');
-    // this.router.navigate(['/register']);
+    this.router.navigate(['/register']);
   }
 
   goToForgotPassword() {
